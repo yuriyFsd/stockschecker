@@ -1,0 +1,7 @@
+*.png
+*.jpg
+*.jpeg
+*.gif
+__pycache__/
+*.pyc
+*.sqlite3
