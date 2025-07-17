@@ -30,7 +30,7 @@ class Screens(models.Model):
 class Bestperf(models.Model):
     ticker = models.CharField(max_length=10)
     name = models.CharField(max_length=300, blank=True, null=True)
-    price = models.FloatField(blank=True, null=True)
+    price = models.CharField(max_length=10, blank=True, null=True)
     sector = models.ForeignKey(Sector, on_delete=models.CASCADE, related_name='best_perfs', blank=True, null=True)
     stock_exchange = models.ForeignKey(StockExchange, on_delete=models.CASCADE, related_name='best_perfs', blank=True, null=True)
     screens = models.ForeignKey(Screens, on_delete=models.CASCADE, related_name='best_perfs', blank=True, null=True)

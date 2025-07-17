@@ -18,22 +18,19 @@ options.add_argument("--disable-gpu")  # Optional: for Windows
 def initDriver():
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-def quitDriver():
+def quitDriver(driver):
     driver.quit()
 
 def getGoogleFinChartScreen(driver, ticker: str, StEx: str, output_folder: str) -> str:
     # options.add_argument("--window-size=1300,1250")  # Increase width to allow cropping
-    url = f"https://www.google.com/finance/quote/{ticker}:{StEx}?window=5D"
-    driver.get(url)
-    elementOfFinancials = findElementByTagAndText(driver, 'div', 'Financials')
+    elementOfFinancials = proceedGoogleFin(driver, ticker, StEx)
+    if not elementOfFinancials:
+        return None
     left_offset = 100
     right_offset = 100
     height = (getPixelYPositionOfElement(elementOfFinancials)) or 1000
-    #options.add_argument(f"--window-size=1300,{height}")  # Set window size for the screenshot
-    # xpath = "//div[@role='heading' and @aria-level='1' and contains(text(), 'Palantir Technologies Inc')]"
-    # To update the window size after the driver is created, use:
+
     driver.set_window_size(1300, height)
-    # element = driver.find_element(By.XPATH, xpath)
 
     os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
     screenshot_path = os.path.join(output_folder, f"finChartGoogle_{ticker}.png")
@@ -45,15 +42,14 @@ def getGoogleFinChartScreen(driver, ticker: str, StEx: str, output_folder: str) 
     return output_folder
 
 def getGoogleFinScreen(driver, ticker: str, StEx: str, output_folder: str) -> str:
-    # options.add_argument("--window-size=1300,2700")  # Increase width to allow cropping
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    url = f"https://www.google.com/finance/quote/{ticker}:{StEx}?window=5D"
-    driver.get(url)
-    elementOfFinancials = findElementByTagAndText(driver, 'div', 'Financials')
+    elementOfFinancials = proceedGoogleFin(driver, ticker, StEx)
+    if not elementOfFinancials:
+        return None
     left_offset = 100
     right_offset = 100
     top_offset = getPixelYPositionOfElement(elementOfFinancials) or 1000
     driver.set_window_size(1300, 2700)
+    
     mouseClickOnBalanceSheetTag(driver)
     os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
     screenshot_path = os.path.join(output_folder, f"finGoogle_{ticker}.png")
@@ -62,6 +58,14 @@ def getGoogleFinScreen(driver, ticker: str, StEx: str, output_folder: str) -> st
     cropped_img = img.crop((left_offset, top_offset, img.width-right_offset, img.height))
     cropped_img.save(screenshot_path)
     return output_folder
+
+def proceedGoogleFin(driver, ticker: str, StEx: str):
+    url = f"https://www.google.com/finance/quote/{ticker}:{StEx}?window=5D"
+    driver.get(url)
+    elementOfFinancials = findElementByTagAndText(driver, 'div', 'Financials')
+    if not elementOfFinancials:
+        return None
+    return elementOfFinancials
 
 def mouseClickOnBalanceSheetTag(driver):
     print("Clicking on Balance Sheet tag...")
@@ -85,40 +89,40 @@ def findElementByTagAndText(driver, tag: str, text: str):
         print(f"Found {len(elements)} elements with tag '{tag}' and text '{text}'.")
         return elements[0]
     else:
-        raise Exception(f"Element with tag '{tag}' and text '{text}' not found.")
+        print.error(f"For '{driver.current_url}' element with tag '{tag}' and text '{text}' not found.")
+        # raise Exception
 
 def getPixelYPositionOfElement(element) -> int:
     location = element.location
-    size = element.size
-    x = location['x']
     y = location['y']
-    width = size['width']
-    height = size['height']
-    print(f"Element position: x={x}, y={y}, width={width}, height={height}")
+    size = element.size        
+    # x = location['x']
+    # width = size['width']
+    # height = size['height']
     return y
 
-driver = initDriver()
-getGoogleFinChartScreen(driver, 'GE', 'NYSE', './../screens')
-getGoogleFinScreen(driver, 'GE', 'NYSE', './../screens')
-quitDriver()
+# Example usage
+# driver = initDriver()
+# getGoogleFinChartScreen(driver, 'KINS', 'NASDAQ', './../screens')
+# getGoogleFinScreen(driver, 'KINS', 'NASDAQ', './../screens')
+# quitDriver()
 
-def getYahooFinScreen(ticker: str, output_folder: str) -> str:
-    options.add_argument("--window-size=1600,1500")  # Optional: set screenshot resolution
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+def getYahooFinScreen(driver, ticker: str, output_folder: str) -> str:
+    driver.set_window_size(1600, 1500)
     url = f"https://finance.yahoo.com/quote/{ticker}/analysis/"
     driver.get(url)
     xpath = "//article[contains(@class, 'gridLayout')]"# tag text to find correct part of the page
     element = driver.find_element(By.XPATH, xpath)
-    # Save screenshot to a specific folder    
-    driver.implicitly_wait(3)#pause for second to allow page to load
+    # Save screenshot to a specific folder
+    time.sleep(5) 
+    # driver.implicitly_wait(3)#pause for second to allow page to load
     os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
     screenshot_path = os.path.join(output_folder, f"finYahoo_{ticker}.png")
     element.screenshot(screenshot_path)
-    # element.screenshot(f"finYahoo_{ticker}.png") 
     print(f"Screenshot saved to {screenshot_path}")
     return screenshot_path
 
-def getScreenshots(tickers: list, output_folder: str):
+def getScreenshots(tickers: list, output_folder: str):#not used
     print(f"Processing {len(tickers)} tickers...")
     for ticker in tickers:
         try:
@@ -126,7 +130,7 @@ def getScreenshots(tickers: list, output_folder: str):
             getYahooFinScreen(ticker, output_folder)
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
-    driver.quit()
+
 
 # getYahooFinScreen('PLTR', './../screens')
 # getScreenshots(['PLTR', 'AAPL', 'MSFT', 'BYRN'], 'results')
