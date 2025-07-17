@@ -5,10 +5,19 @@
     <p>Welcome to the Best Performers page! (index.html)</p>
 
     <ul>
-        {% for stock in bestperformers %}
-            <li>
-                {{ stock.ticker }}: {{ stock.name }} | ({{ stock.sector }})
-                <img src="/static/{{ stock.fin_yahoo_screen_path }}" alt="{{ stock.ticker }}" style="height:600px;vertical-align:middle;">
+        {% for stock in bestperformers %}        
+            <li> 
+                <b>{{ forloop.counter }}. of {{ bestperformers|length }}</b>
+                <div style="display:inline-block; color:green;"><u><b>&nbsp{{ stock.ticker }} : {{stock.stock_exchange.name}}</b></div>
+                <div style="display:inline-block;"><u>{{ stock.name }}</u></div>
+                <div style="display:inline-block; color: gray;">({{ stock.sector }})</div>
+                <div style="display:inline-block; color:darkcyan"><u>Price: {{ stock.price }}</u></div>
+                <div style="display:inline-block; color: blue;"> | {{ stock.timestamp }}</div>
+                <div>
+                    <img src="/{{ stock.screens.fin_yahoo_screen_path }}" alt="{{ stock.ticker }}" style="height:600px;vertical-align:middle;">
+                    <img src="/{{ stock.screens.finchart_google_screen_path }}" alt="{{ stock.ticker }}" style="height:600px;vertical-align:middle;">
+                    <img src="/{{ stock.screens.fin_google_screen_path }}" alt="{{ stock.ticker }}" style="height:600px;vertical-align:middle;">
+                </div>
                 <hr>
             </li>
         {% endfor %}

@@ -8,7 +8,8 @@ from .models import Bestperf
 
 def index(request):
     return render(request, "bestperformers/index.html", {
-        'bestperformers': Bestperf.objects.all()
+        'bestperformers': Bestperf.objects.all(),
+        
     })
 
 def addNewStock(request):

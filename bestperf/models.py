@@ -25,7 +25,7 @@ class Screens(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(self.id)
+        return f"{str(self.id)} | {self.fin_yahoo_screen_path} | {self.fin_google_screen_path} | {self.finchart_google_screen_path} | | {self.timestamp}"
 
 class Bestperf(models.Model):
     ticker = models.CharField(max_length=10)
@@ -37,4 +37,4 @@ class Bestperf(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.ticker}:{self.stock_exchange} {self.name} | ({self.sector})"
+        return f"{self.ticker}:{self.stock_exchange}  {self.price}  {self.name} | {self.sector} | {self.screens} | {self.timestamp}"

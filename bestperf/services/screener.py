@@ -39,7 +39,7 @@ def getGoogleFinChartScreen(driver, ticker: str, StEx: str, output_folder: str) 
     cropped_img = img.crop((left_offset, 0, img.width-right_offset, img.height))
     cropped_img.save(screenshot_path)
     # element.screenshot(f"finGoogle_{ticker}.png")
-    return output_folder
+    return screenshot_path
 
 def getGoogleFinScreen(driver, ticker: str, StEx: str, output_folder: str) -> str:
     elementOfFinancials = proceedGoogleFin(driver, ticker, StEx)
@@ -57,7 +57,7 @@ def getGoogleFinScreen(driver, ticker: str, StEx: str, output_folder: str) -> st
     img = Image.open(screenshot_path)
     cropped_img = img.crop((left_offset, top_offset, img.width-right_offset, img.height))
     cropped_img.save(screenshot_path)
-    return output_folder
+    return screenshot_path
 
 def proceedGoogleFin(driver, ticker: str, StEx: str):
     url = f"https://www.google.com/finance/quote/{ticker}:{StEx}?window=5D"
