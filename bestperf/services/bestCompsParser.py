@@ -137,22 +137,24 @@ print('Best Companies:', len(bestComps))
 for comp in bestComps:
     # print(comp['title'], comp['sector'])
     compTicker = comp['title'].split(' ')[0].strip()
-    # print('Sector:', comp['sector'].strip())
+    name = comp['title'].split('−')[1].strip()
+    print(compTicker, name)
 
-    yahooFinScreenPath = screener.getYahooFinScreen(compTicker, './../static/screens')
+    # yahooFinScreenPath = screener.getYahooFinScreen(compTicker, './../static/screens')
+    googleFinChartScreenPath = screener.getGoogleFinChartScreen(compTicker, './../static/screens')
 
     sector_obj, created = Sector.objects.update_or_create(
         name=comp['sector'].strip(),
     )
 
-    bestperf, created = Bestperf.objects.update_or_create(
-        ticker=compTicker,
-        fin_yahoo_screen_path=yahooFinScreenPath,
-        defaults={
-            'name': comp['title'].strip(),
-            'sector': sector_obj
-        }
-    )
+    # bestperf, created = Bestperf.objects.update_or_create(
+    #     ticker=compTicker,
+    #     fin_yahoo_screen_path=yahooFinScreenPath,
+    #     defaults={
+    #         'name': name,
+    #         'sector': sector_obj
+    #     }
+    # )
 
 screener.quitDriver
 # tickers = [comp['title'].split(' ')[0].strip() for comp in bestComps]
