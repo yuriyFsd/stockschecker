@@ -4,8 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Best Performers</title>
+    <style>
+        nav {
+            background-color: #1b0249;
+            display: flex;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s;
+        }
+        nav a:hover {
+            background-color: #575757;
+        }
+    </style>
 </head>
 <body>
+    <nav>
+        <a href="/bestperf/index">Best Performers</a>
+        <a href="/bestperf/owned">Owned Companies</a>
+        <a href="/bestperf/watchlist">Watch List</a>
+    </nav>
     {% block body %}
     {% endblock %}
 </body>

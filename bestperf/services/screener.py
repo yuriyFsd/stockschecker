@@ -95,7 +95,7 @@ def findElementByTagAndText(driver, tag: str, text: str):
 def getPixelYPositionOfElement(element) -> int:
     location = element.location
     y = location['y']
-    size = element.size        
+    size = element.size
     # x = location['x']
     # width = size['width']
     # height = size['height']
