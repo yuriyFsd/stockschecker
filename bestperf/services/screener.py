@@ -9,12 +9,11 @@ import time
 
 # Set up Chrome options for headless mode
 options = Options()
+
 options.headless = True
 options.add_argument("--headless")  # Run in headless mode
 options.add_argument("--disable-gpu")  # Optional: for Windows
-# Remove window-size from global options, set per function
 
-# Initialize the WebDriver
 def initDriver():
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
@@ -89,7 +88,8 @@ def findElementByTagAndText(driver, tag: str, text: str):
         print(f"Found {len(elements)} elements with tag '{tag}' and text '{text}'.")
         return elements[0]
     else:
-        print.error(f"For '{driver.current_url}' element with tag '{tag}' and text '{text}' not found.")
+        print(f"For '{driver.current_url}' element with tag '{tag}' and text '{text}' not found.")
+        return None
         # raise Exception
 
 def getPixelYPositionOfElement(element) -> int:
@@ -118,6 +118,7 @@ def getYahooFinScreen(driver, ticker: str, output_folder: str) -> str:
     # driver.implicitly_wait(3)#pause for second to allow page to load
     os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
     screenshot_path = os.path.join(output_folder, f"finYahoo_{ticker}.png")
+    # driver.save_screenshot(screenshot_path)
     element.screenshot(screenshot_path)
     print(f"Screenshot saved to {screenshot_path}")
     return screenshot_path
@@ -130,28 +131,3 @@ def getScreenshots(tickers: list, output_folder: str):#not used
             getYahooFinScreen(ticker, output_folder)
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
-
-
-# getYahooFinScreen('PLTR', './../screens')
-# getScreenshots(['PLTR', 'AAPL', 'MSFT', 'BYRN'], 'results')
-
-#exit(0)
-
-# # Target URL
-# url = "https://finance.yahoo.com/quote/PLTR/analysis/"
-# driver.get(url)
-
-# # Locate the element (e.g., by ID, class, tag, etc.)
-# #element = driver.find_element(By.t, "article")
-# element = driver.find_element(By.XPATH, "//article[contains(@class, 'gridLayout')]")
-
-# # <article class="gridLayout yf-lqb5cj">
-
-# # Save screenshot
-# element.screenshot("element_screenshot.png")
-# #screenshot_path = "screenshot.png"
-# #driver.save_screenshot(screenshot_path)
-# print(f"Screenshot saved to element_screenshot.png")
-
-# # Clean up
-# driver.quit()

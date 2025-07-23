@@ -6,7 +6,7 @@ from django.urls import reverse
 from .models import Bestperf
 import bestperf.services.stockDetails as stockDetails
 import bestperf.services.screener as screener
-from bestperf.models import WatchCompanies, Sector, Screens, StockExchange
+from bestperf.models import WatchCompanies, Sector, Screens, StockExchange, RelationToUser
 
 # Create your views here.
 
@@ -18,15 +18,35 @@ def index(request):
 
 def watchList(request):
     return render(request, "bestperformers/watchlist.html", {
+        'watchlist': WatchCompanies.objects.filter(relation_to_user__title='Watch'),
     })
 
 def addNewStock(request):
     if request.method == 'POST':
-        #get fundamentals
         ticker = request.POST['ticker']
         fundamentals = stockDetails.getStockFundaments(ticker)
-        print(1111111111111)
-        print(fundamentals)
+        if not fundamentals:
+            return
+        populateWatchlistDB(fundamentals, ticker)
+        return render(request, "bestperformers/watchlist.html") #HttpResponseRedirect(reverse('bestperformers/watchlist.html'))
+
+
+def getWatchListAllScreens(request):
+    print('getWatchListAllScreens !!!!!!!!!!!!!!')
+    stockDetails.updateWathListScreens()
+    return render(request, "bestperformers/watchlist.html") 
+
+def populateWatchlistDB(fundamentals: dict, ticker: str):
+        """
+        Populate the database with a new stock, given its fundamentals.
+
+        Args:
+            fundamentals (dict): A dictionary containing the stock's name, sector, exchange, etc.
+            ticker (str): The stock's ticker symbol.
+
+        Returns:
+            None
+        """
         sector_obj, created = Sector.objects.update_or_create(
             name=fundamentals['sector'].strip(),
         )
@@ -34,56 +54,15 @@ def addNewStock(request):
         stockExchange, created = StockExchange.objects.update_or_create(
             name=fundamentals['exchange'].strip(),
         )
-        
+
         watchCompany, created = WatchCompanies.objects.update_or_create(
             ticker = ticker,
             price = '',
             sector = sector_obj,
             stock_exchange = stockExchange,
+            relation_to_user = RelationToUser.objects.get(title='Watch'),
             defaults = {
                 'name': fundamentals['name'],
                 'timestamp': django.utils.timezone.now(),
             }
         )
-        #show to watch list
-        #make button "get all screens"
-
-        # ticker = str(request.POST['ticker'])
-        # print(ticker)
-        # driver = screener.initDriver()
-        # screensDir = './bestperf/static/screens'
-        # patch = screener.getYahooFinScreen(driver, ticker, screensDir)
-        # print(patch)
-        # screener.quitDriver(driver)
-        # return
-        # bestperf = Bestperf.objects.create(
-        #     ticker=ticker
-        # )
-        return render(request, "bestperformers/watchlist.html") #HttpResponseRedirect(reverse('bestperformers/watchlist.html'))
-        
-
-# def populateDB(comp: dict, compTicker: str, screensDir: dict):
-#     sector_obj, created = Sector.objects.update_or_create(
-#         name=comp['sector'].strip(),
-#     )
-
-#     screens_obj, created = Screens.objects.update_or_create(
-#         fin_yahoo_screen_path=screensDir.get('yahoo', ''),
-#         fin_google_screen_path=screensDir.get('google_fin', ''),
-#         finchart_google_screen_path=screensDir.get('google_fin_chart', ''),
-#     )
-
-#     stockExchange, created = StockExchange.objects.update_or_create(
-#         name=comp['stock_exchange'].strip(),
-#     )
-
-#     bestperf, created = Bestperf.objects.update_or_create(
-#         ticker =  ticker,
-#         price = '',
-#         sector = sector_obj,
-#         stock_exchange = stockExchange,
-#         defaults = {
-#             'name': name,
-#             'timestamp': django.utils.timezone.now(),
-#         }
-#     )

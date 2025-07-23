@@ -46,7 +46,7 @@ class RelationToUser(models.Model):
         return f"{self.title}"
 
 class WatchCompanies(models.Model):
-    ticker = models.CharField(max_length=10)
+    ticker = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=300, blank=True, null=True)
     price = models.CharField(max_length=10, blank=True, null=True)
     sector = models.ForeignKey(Sector, on_delete=models.CASCADE, related_name='watch_list', blank=True, null=True)
