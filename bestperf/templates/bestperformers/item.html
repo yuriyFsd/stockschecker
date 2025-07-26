@@ -1,0 +1,17 @@
+{% extends "bestperformers/layout.html" %}
+
+{% block body %}
+    <h1>Item</h1>
+
+    <div style="display:inline-block; color:green; margin: 5px;"><u><b>&nbsp{{ stock_details.ticker }} : {{stock_details.stock_exchange.name}}</b></u></div>
+    <div style="display:inline-block;"><u>{{ stock_details.name }}</u></div>
+    <div style="display:inline-block; color: gray;">({{ stock_details.sector }})</div>
+    <div style="display:inline-block; color:darkcyan"><u>Price: {{ stock_details.price }}</u></div>
+    <div style="display:inline-block; color: blue;"> | {{ stock_details.timestamp }}</div>
+    <div>
+        <img src="/{{ stock_details.screens.fin_yahoo_screen_path }}" alt="{{ stock_details.ticker }}" style="height:600px;vertical-align:middle;">
+        <img src="/{{ stock_details.screens.finchart_google_screen_path }}" alt="{{ stock_details.ticker }}" style="height:600px;vertical-align:middle;">
+        <img src="/{{ stock_details.screens.fin_google_screen_path }}" alt="{{ stock_details.ticker }}" style="height:600px;vertical-align:middle;">
+    </div>
+
+{% endblock %}

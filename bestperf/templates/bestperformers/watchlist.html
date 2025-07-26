@@ -27,17 +27,34 @@
         <div id="response"></div>
     </div>
 
-    
-    <p>Stocks watch list</p>
     <ul>
         {% for stock in watchlist %}
             <li>
+                <hr style="border: none; height: 10px; background-color: rgb(95, 195, 241); width: 100%;">
                 <b>{{ forloop.counter }}. of {{ watchlist|length }}</b>
                 <div style="display:inline-block; color:green; margin: 5px;"><u><b>&nbsp{{ stock.ticker }} : {{stock.stock_exchange.name}}</b></u></div>
                 <div style="display:inline-block;"><u>{{ stock.name }}</u></div>
                 <div style="display:inline-block; color: gray;">({{ stock.sector }})</div>
                 <div style="display:inline-block; color:darkcyan"><u>Price: {{ stock.price }}</u></div>
                 <div style="display:inline-block; color: blue;"> | {{ stock.timestamp }}</div>
+                <div style="display:inline-block;">
+                    <form action="{% url 'update_item_screens' stock.id %}" method="post">
+                            {% csrf_token %}
+                            <button>Update Item Screens</button>
+                    </form>
+                </div>
+                <div style="display:inline-block;">
+                    <form action="{% url 'delete_item' stock.id %}" method="post">
+                            {% csrf_token %}
+                            <button>Delete Item</button>
+                    </form>
+                </div>
+                <div style="display:inline-block;">
+                    <form action="{% url 'show_item' stock.id %}" method="get">
+                            {% csrf_token %}
+                            <button>See Only This Item</button>
+                    </form>
+                </div>
                  <div>
                     <img src="/{{ stock.screens.fin_yahoo_screen_path }}" alt="{{ stock.ticker }}" style="height:600px;vertical-align:middle;">
                     <img src="/{{ stock.screens.finchart_google_screen_path }}" alt="{{ stock.ticker }}" style="height:600px;vertical-align:middle;">

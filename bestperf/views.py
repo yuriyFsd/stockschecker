@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from .models import Bestperf
 import bestperf.services.stockDetails as stockDetails
-import bestperf.services.screener as screener
+# import bestperf.services.screener as screener
 from bestperf.models import WatchCompanies, Sector, Screens, StockExchange, RelationToUser
 
 # Create your views here.
@@ -25,28 +25,17 @@ def addNewStock(request):
     if request.method == 'POST':
         ticker = request.POST['ticker']
         fundamentals = stockDetails.getStockFundaments(ticker)
+        print('fundamentals: ', fundamentals)
         if not fundamentals:
             return
         populateWatchlistDB(fundamentals, ticker)
         return render(request, "bestperformers/watchlist.html") #HttpResponseRedirect(reverse('bestperformers/watchlist.html'))
 
-
 def getWatchListAllScreens(request):
-    print('getWatchListAllScreens !!!!!!!!!!!!!!')
     stockDetails.updateWathListScreens()
     return render(request, "bestperformers/watchlist.html") 
 
 def populateWatchlistDB(fundamentals: dict, ticker: str):
-        """
-        Populate the database with a new stock, given its fundamentals.
-
-        Args:
-            fundamentals (dict): A dictionary containing the stock's name, sector, exchange, etc.
-            ticker (str): The stock's ticker symbol.
-
-        Returns:
-            None
-        """
         sector_obj, created = Sector.objects.update_or_create(
             name=fundamentals['sector'].strip(),
         )
@@ -66,3 +55,22 @@ def populateWatchlistDB(fundamentals: dict, ticker: str):
                 'timestamp': django.utils.timezone.now(),
             }
         )
+
+def delete_item(request, pk):
+    WatchCompanies.objects.filter(pk=pk).delete()
+
+    return HttpResponseRedirect(reverse('watchlist'))
+    return render(request, "bestperformers/watchlist.html")
+
+    # return HttpResponseRedirect(reverse('bestperformers/watchlist.html'))
+
+def update_item_screens(request, pk):
+    stockDetails.updateItemScreens(pk)
+    return HttpResponseRedirect(reverse('watchlist'))
+    return render(request, "bestperformers/watchlist.html")
+
+def show_item(request, pk):
+    stock = WatchCompanies.objects.get(pk=pk)
+    return render(request, "bestperformers/item.html", {
+        'stock_details': stock,
+    })

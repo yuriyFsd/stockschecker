@@ -25,30 +25,18 @@ def getStockActualPrice(ticker):
     print(data)
 
 def updateWathListScreens():
-
     whatchList = WatchCompanies.objects.filter(relation_to_user__title='Watch') \
         .select_related('stock_exchange') \
         .values_list('ticker', 'stock_exchange__name', named=True)
-    # whatchList = WatchCompanies.objects.filter(relation_to_user__title='Watch').values_list('ticker', 'stock_exchange_id' , flat=False)
 
-    # whatchlistTickers = WatchCompanies.objects.filter(relation_to_user=RelationToUser.objects.get(title='Watch'))
-    # print('')
-    # print(whatchList)
-    # print('')
-    #return 'OK'
     screensDir = './bestperf/static/screens'
     driver = screener.initDriver()
     for tickerObject in whatchList:  
-        # print('tickerObject:', tickerObject.stock_exchange__name)
-        # continue
         ticker = tickerObject.ticker
         exchange = tickerObject.stock_exchange__name
         yahooFinScreenPath = screener.getYahooFinScreen(driver, ticker, screensDir)
         googleFinScreenPath = screener.getGoogleFinScreen(driver, ticker, exchange, screensDir)
         googleFinChartScreenPath = screener.getGoogleFinChartScreen(driver, ticker, exchange, screensDir)
-
-
-        print(yahooFinScreenPath)
 
         WatchCompanies.objects.filter(ticker=ticker).update(
             screens=Screens.objects.update_or_create(
@@ -60,3 +48,21 @@ def updateWathListScreens():
 
     screener.quitDriver(driver)
 
+def updateItemScreens(pk):
+    ticker = WatchCompanies.objects.get(pk=pk).ticker
+    exchange = WatchCompanies.objects.get(pk=pk).stock_exchange.name
+    screensDir = './bestperf/static/screens'
+    driver = screener.initDriver()
+    yahooFinScreenPath = screener.getYahooFinScreen(driver, ticker, screensDir)
+    googleFinScreenPath = screener.getGoogleFinScreen(driver, ticker, exchange, screensDir)
+    googleFinChartScreenPath = screener.getGoogleFinChartScreen(driver, ticker, exchange, screensDir)
+
+    screener.quitDriver(driver)
+
+    WatchCompanies.objects.filter(pk=pk).update(
+        screens=Screens.objects.update_or_create(
+            fin_google_screen_path=googleFinScreenPath.replace('bestperf/', '../') if googleFinScreenPath else '',
+            fin_yahoo_screen_path=yahooFinScreenPath.replace('bestperf/', '../') if yahooFinScreenPath else '',
+            finchart_google_screen_path=googleFinChartScreenPath.replace('bestperf/', '../') if googleFinChartScreenPath else '',
+        )[0]
+    )
