@@ -24,7 +24,7 @@ def getStockActualPrice(ticker):
     data, meta_data = ts.get_quote_endpoint(symbol=ticker)
     print(data)
 
-def updateWathListScreens():
+def updateWatchListScreens():
     whatchList = WatchCompanies.objects.filter(relation_to_user__title='Watch') \
         .select_related('stock_exchange') \
         .values_list('ticker', 'stock_exchange__name', named=True)

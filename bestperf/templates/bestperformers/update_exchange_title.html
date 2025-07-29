@@ -1,0 +1,13 @@
+{% extends "bestperformers/layout.html" %}
+{% block body %}
+    <h1>Update Exchange</h1>
+    
+    Are you sure you want to update {{ stock.ticker }}?
+
+    <form action="{% url 'update_exchange_title' %}" method="post">
+        {% csrf_token %}
+        <label for="ticker">Ticker:</label>
+        <input type="text" id="exchange" name="exchange" required>
+        <button type="submit">Update Exchange</button>
+    </form>
+{% endblock %}

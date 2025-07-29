@@ -1,7 +1,7 @@
 {% extends "bestperformers/layout.html" %}
 
 {% block body %}
-    <div style="display: flex; justify-content: center;"><h1>Watch List</h1></div>    
+    <div style="display: flex; justify-content: center;"><h1>{{ list_title }}</h1></div>
 
     <h2>Add New Stock</h2>
     <div style="display: flex;">
@@ -40,6 +40,12 @@
                     <form action="{% url 'update_item_screens' stock.id %}" method="post" onsubmit="return confirm('It will take a few minutes. Are you sure you want to update {{ stock.ticker }}?')">
                             {% csrf_token %}
                             <button>Update Item Screens</button>
+                    </form>
+                </div>
+                <div style="display:inline-block;">
+                    <form action="{% url 'update_exchange_title' stock.id %}" method="post" onsubmit="return confirm('Are you sure you want to update {{ stock.ticker }}?')">
+                            {% csrf_token %}
+                            <button>Update Exchange</button>
                     </form>
                 </div>
                 <div style="display:inline-block;">
