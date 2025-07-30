@@ -24,8 +24,10 @@ def getStockActualPrice(ticker):
     data, meta_data = ts.get_quote_endpoint(symbol=ticker)
     print(data)
 
-def updateWatchListScreens():
-    whatchList = WatchCompanies.objects.filter(relation_to_user__title='Watch') \
+def updateWatchListScreens(sourcePage):
+    relationToUserValue = 'Own' if sourcePage == 'owned' else'Watch'
+    print(111111111111111111111111111111111111111)
+    whatchList = WatchCompanies.objects.filter(relation_to_user__title=relationToUserValue) \
         .select_related('stock_exchange') \
         .values_list('ticker', 'stock_exchange__name', named=True)
 
@@ -34,7 +36,7 @@ def updateWatchListScreens():
     for tickerObject in whatchList:  
         ticker = tickerObject.ticker
         exchange = tickerObject.stock_exchange__name
-        yahooFinScreenPath = screener.getYahooFinScreen(driver, ticker, screensDir)
+        yahooFinScreenPath =screener.getYahooFinScreen(driver, ticker, screensDir)
         googleFinScreenPath = screener.getGoogleFinScreen(driver, ticker, exchange, screensDir)
         googleFinChartScreenPath = screener.getGoogleFinChartScreen(driver, ticker, exchange, screensDir)
 

@@ -18,13 +18,13 @@ def index(request):
 
 def watchList(request):
     return render(request, "bestperformers/watchlist.html", {
-        'watchlist': WatchCompanies.objects.filter(relation_to_user__title='Watch'),
+        'watchlist': WatchCompanies.objects.filter(relation_to_user__title='Watch', removed=False),
         'list_title': 'Watch Companies',
     })
  
 def owned(request):
     return render(request, "bestperformers/watchlist.html", {
-        'watchlist': WatchCompanies.objects.filter(relation_to_user__title='Own'),
+        'watchlist': WatchCompanies.objects.filter(relation_to_user__title='Own', removed=False),
         'list_title': 'Owned Companies',
     })
 
@@ -39,6 +39,12 @@ def addNewStock(request):
             sourcePage = 'owned'
 
         print(f"SOURCE: {sourcePage}")
+
+        ifStockInDB = WatchCompanies.objects.filter(ticker=ticker).exists()
+        if ifStockInDB:
+            WatchCompanies.objects.filter(ticker=ticker).update(removed=False)
+            return render(request, "bestperformers/watchlist.html")
+
         fundamentals = stockDetails.getStockFundaments(ticker)
         # print('fundamentals: ', fundamentals)
         if not fundamentals:
@@ -52,7 +58,9 @@ def addNewStock(request):
         return render(request, "bestperformers/watchlist.html")
 
 def getWatchListAllScreens(request):
-    stockDetails.updateWatchListScreens()
+    sourcePage = request.META.get('HTTP_REFERER')
+    sourcePage = 'owned' if 'owned' in sourcePage else 'watchlist'
+    stockDetails.updateWatchListScreens(sourcePage)
     return render(request, "bestperformers/watchlist.html") 
 
 def populateWatchlistDB(fundamentals: dict, ticker: str, sourcePage: str):
@@ -77,7 +85,8 @@ def populateWatchlistDB(fundamentals: dict, ticker: str, sourcePage: str):
     )
 
 def delete_item(request, pk):
-    WatchCompanies.objects.filter(pk=pk).delete()
+    WatchCompanies.objects.filter(pk=pk).update(removed=True)
+    # WatchCompanies.objects.filter(pk=pk).delete()
 
     return HttpResponseRedirect(reverse('watchlist'))
     return render(request, "bestperformers/watchlist.html")

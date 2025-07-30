@@ -54,6 +54,7 @@ class WatchCompanies(models.Model):
     screens = models.ForeignKey(Screens, on_delete=models.CASCADE, related_name='watch_list', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     relation_to_user = models.ForeignKey(RelationToUser, on_delete=models.CASCADE, related_name='watch_list', blank=True, null=True)
+    removed = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.ticker}:{self.stock_exchange}  {self.price}  {self.name} | {self.sector} | {self.screens} | {self.timestamp}"

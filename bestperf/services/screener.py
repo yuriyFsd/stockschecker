@@ -111,15 +111,18 @@ def getYahooFinScreen(driver, ticker: str, output_folder: str) -> str:
     driver.set_window_size(1600, 1500)
     url = f"https://finance.yahoo.com/quote/{ticker}/analysis/"
     driver.get(url)
-    xpath = "//article[contains(@class, 'gridLayout')]"# tag text to find correct part of the page
-    element = driver.find_element(By.XPATH, xpath)
-    # Save screenshot to a specific folder
     time.sleep(5) 
-    # driver.implicitly_wait(3)#pause for second to allow page to load
+    xpath = "//article[contains(@class, 'gridLayout')]"# tag text to find correct part of the page
     os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
     screenshot_path = os.path.join(output_folder, f"finYahoo_{ticker}.png")
-    # driver.save_screenshot(screenshot_path)
-    element.screenshot(screenshot_path)
+    try:
+        element = driver.find_element(By.XPATH, xpath)
+        element.screenshot(screenshot_path)
+    except Exception as e:
+        driver.save_screenshot(screenshot_path)
+        
+    # driver.implicitly_wait(3)#pause for second to allow page to load
+    
     print(f"Screenshot saved to {screenshot_path}")
     return screenshot_path
 
