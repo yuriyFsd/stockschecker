@@ -2,6 +2,7 @@ import django
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.contrib import messages
 
 from .models import Bestperf
 import bestperf.services.stockDetails as stockDetails
@@ -43,9 +44,13 @@ def addNewStock(request):
         ifStockInDB = WatchCompanies.objects.filter(ticker=ticker).exists()
         if ifStockInDB:
             WatchCompanies.objects.filter(ticker=ticker).update(removed=False)
+            messages.success(request, message = f"{ticker} it was already in your DB. And it was restored.")
             return render(request, "bestperformers/watchlist.html")
-
-        fundamentals = stockDetails.getStockFundaments(ticker)
+        try:
+            fundamentals = stockDetails.getStockFundaments(ticker)
+        except:
+            messages.error(request, message = f"{ticker} it was not found.")
+            return render(request, "bestperformers/watchlist.html")        
         # print('fundamentals: ', fundamentals)
         if not fundamentals:
             return
@@ -54,7 +59,7 @@ def addNewStock(request):
             return HttpResponseRedirect(reverse('watchlist'))
         elif sourcePage == 'owned':                
             return HttpResponseRedirect(reverse('owned'))
-        
+        messages.add_message(request, messages.SUCCESS, f"{ticker} it was added to your DB.")
         return render(request, "bestperformers/watchlist.html")
 
 def getWatchListAllScreens(request):
@@ -104,6 +109,9 @@ def update_exchange_title(request, pk):
     return render(request, "bestperformers/item.html")
 
 def show_item(request, pk):
+    print(22222222222222222222222222222222)
+    messages.add_message(request, messages.INFO, "Hello world.")
+    messages.success(request, "Operation successful!")
     stock = WatchCompanies.objects.get(pk=pk)
     return render(request, "bestperformers/item.html", {
         'stock_details': stock,

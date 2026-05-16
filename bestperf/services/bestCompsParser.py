@@ -2,6 +2,7 @@ import importlib
 import sys
 import django
 import os
+import datetime
 
 #from tests import t1
 from bs4 import BeautifulSoup
@@ -9,6 +10,8 @@ import urllib.request, urllib.parse, urllib.error
 import ssl
 import json
 import screener
+from api import ApiService
+# import ApiService
 
 sys.path.append('E:/projects/2024/dev/python/stockschecker')  # Add project root to path
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'stockschecker.settings')  # Replace with your settings module
@@ -21,8 +24,7 @@ from bestperf.models import Bestperf, Sector, Screens, StockExchange
 # models.test()
 # exit(0)
 
-def getAnalystRating():
-    url = 'https://www.tradingview.com/markets/stocks-usa/market-movers-best-performing/'
+def getAnalystRating(url):
     html = urllib.request.urlopen(url).read()
     soup = BeautifulSoup(html, 'html.parser')
     tables = soup('table')
@@ -37,7 +39,7 @@ def getAnalystRating():
         if not td_tags:
             continue
         
-        comp['price'] = td_tags[2].text.strip()
+        comp['price'] = td_tags[2].text.strip().replace("USD", "").strip()
         comp["analyst"] = td_tags[-1].text.strip()
         for a_tag in a_tags:
             aClass = " ".join(a_tag.get('class'))
@@ -82,7 +84,7 @@ def getTechRating():
         },
         "range": [
             0,
-            100
+            18000
         ],
         "sort": {
             "sortBy": "Perf.Y",
@@ -109,17 +111,31 @@ def getTechRating():
     return companies
 
 def filterTechRating(companies):
-    filtered = [comp for comp in companies if comp['d'][2] > 0.5 and comp['d'][3] > 0.5 and comp['d'][4] > 0]
+    filtered = [comp for comp in companies if isinstance(comp['d'][2], float) and comp['d'][2] > -0.0 and isinstance(comp['d'][3], float) and comp['d'][3] > -0.2 and isinstance(comp['d'][4], float) and comp['d'][4] > -0.2] #weaker buy levels
+    #filtered = [comp for comp in companies if isinstance(comp['d'][2], float) and comp['d'][2] > -1 and isinstance(comp['d'][3], float) and comp['d'][3] > -0.82 and isinstance(comp['d'][4], float) and comp['d'][4] > -0.9] #weaker buy levels
+    # filtered = [comp for comp in companies if comp['d'][2] > 0.5 and comp['d'][3] > 0.5 and comp['d'][4] > 0] #strong buy, strong buy, buy
     return filtered
 
 def filterAnalystRating(companies):
-    filtered = [comp for comp in companies if comp['analyst'] == 'Strong buy']
+    filtered = [comp for comp in companies if (comp['analyst'] == 'Strong buy')]
     return filtered
 
+def printParsedInfo(filteredAnalystComps, filteredTechComps):
+    print('Time Stamp:', datetime.datetime.now())
+    print('Tech Companies:', len(filteredTechComps))
+    print('Analyst Companies:', len(filteredAnalystComps))
+
 filteredTechComps = filterTechRating(getTechRating())
-filteredAnalystComps = filterAnalystRating(getAnalystRating())
-print('Tech Companies:', len(filteredTechComps))
-print('Analyst Companies:', len(filteredAnalystComps))
+
+
+url = 'https://www.tradingview.com/markets/stocks-usa/market-movers-losers/' #Losers
+filteredAnalystCompsLosers = filterAnalystRating(getAnalystRating(url))
+printParsedInfo(filteredAnalystCompsLosers, filteredTechComps)
+
+url = 'https://www.tradingview.com/markets/stocks-usa/market-movers-best-performing/'
+filteredAnalystCompsPerformers = filterAnalystRating(getAnalystRating(url))
+printParsedInfo(filteredAnalystCompsPerformers, filteredTechComps)
+
 
 def populateDB(comp: dict, compTicker: str, screensDir: dict):
     sector_obj, created = Sector.objects.update_or_create(
@@ -144,7 +160,7 @@ def populateDB(comp: dict, compTicker: str, screensDir: dict):
         screens = screens_obj,
         defaults = {
             'name': name,
-            'timestamp': django.utils.timezone.now(),
+            'timestamp': datetime.datetime.now(),
         }
     )
 
@@ -153,16 +169,29 @@ def getBestComps(techComps, analystComps):
     bestComps = []
     for comp in techComps:
         stockExchange = comp['s'].split(':')[0]
+        stockTicker = comp['s'].split(':')[1]
         compDetails = comp['d'][0]
         if compDetails in analystDict:
             analystDict[compDetails]['stock_exchange'] = stockExchange
+            analystDict[compDetails]['stock_ticker'] = stockTicker
             bestComps.append(analystDict[compDetails])
     return bestComps
 
-bestComps = getBestComps(filteredTechComps, filteredAnalystComps)
+bestCompsLosers = getBestComps(filteredTechComps, filteredAnalystCompsLosers)
+bestCompsPerformers = getBestComps(filteredTechComps, filteredAnalystCompsPerformers)
 
-print('Best Companies:', len(bestComps))
+print('Best Loosers Companies:', len(bestCompsLosers))
+print('Best Loosers Companies:', bestCompsLosers)
 
+print('Best Performers Companies:', len(bestCompsPerformers))
+print('Best Performers Companies:', bestCompsPerformers)
+
+apiService = ApiService()
+gasApiUrl = 'https://script.google.com/macros/s/AKfycbwFL9Zi2ZYcBMG93PME7afU1ShVN4SsetGfG3lWsIHUzXFDudRSVGcZ1tWTwalHkeAikA/exec'
+apiService.post_json(gasApiUrl, bestCompsLosers, 'losers')
+apiService.post_json(gasApiUrl, bestCompsPerformers, 'performers')
+
+exit(0)
 browserDriver = screener.initDriver() if len(bestComps) > 0 else None
 for comp in bestComps:
     # print(comp['title'], comp['sector'])
@@ -187,7 +216,8 @@ for comp in bestComps:
         print(f"Error processing {compTicker}: {e}")
 
 
-screener.quitDriver(browserDriver)
+if browserDriver:
+    screener.quitDriver(browserDriver)
 # tickers = [comp['title'].split(' ')[0].strip() for comp in bestComps]
 # screensPath = screener.getScreenshots(tickers[0:2], './../screens')
 # print('Screenshots:', screensPath)

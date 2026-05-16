@@ -14,4 +14,15 @@
         <img src="/{{ stock_details.screens.fin_google_screen_path }}" alt="{{ stock_details.ticker }}" style="height:600px;vertical-align:middle;">
     </div>
 
+{% if messages %}
+     {% for message in messages %}
+        <script>alert("{{ message }}");</script>
+    {% endfor %}
+<!-- <ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul> -->
+{% endif %}
+
 {% endblock %}
